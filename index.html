@@ -8,59 +8,108 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── ODDS EXTRAS ── */
+    .odds-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+    .odd-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      background: #f0f0ec;
+      border: 1px solid #ddddd6;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .odd-pill .odd-label { color: var(--muted); font-size: 0.65rem; }
+    .odd-pill .odd-val   { color: var(--text);  font-weight: 600; font-family: 'DM Mono', monospace; }
+    .odd-pill.home-pill  { background: #e8f4fd; border-color: #b8d8f5; }
+    .odd-pill.draw-pill  { background: #fef9e7; border-color: #f5e6a3; }
+    .odd-pill.away-pill  { background: #fdf0f0; border-color: #f5c6c6; }
+    .odd-pill.over-pill  { background: var(--green-bg); border-color: var(--green-border); }
+    .odd-pill.under-pill { background: var(--amber-bg); border-color: var(--amber-border); }
+    .odd-pill.btts-yes   { background: var(--purple-bg); border-color: var(--purple-border); }
+    .odd-pill.btts-no    { background: var(--gray-bg);   border-color: var(--gray-border); }
+
+    .odds-loading {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 4px;
+    }
+    .odds-updated {
+      font-size: 0.68rem;
+      color: #bbb;
+      margin-top: 2px;
+    }
+    .odds-banner {
+      max-width: 1100px;
+      margin: 0 auto 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .odds-banner span { display: flex; align-items: center; gap: 6px; }
+    .dot-live { width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block; }
+    .dot-stale{ width:8px; height:8px; border-radius:50%; background:#f59e0b; display:inline-block; }
+    .btn-refresh {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-refresh:hover { border-color: var(--accent); color: var(--text); }
+    .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════════
-     PANTALLA DE AUTENTICACIÓN
-══════════════════════════════════════════════════════════ -->
+<!-- ══ AUTH SCREEN ══ -->
 <div id="authScreen">
   <div class="auth-card">
     <h2>Mundial 2026 🏆</h2>
     <p class="subtitle">Registra y guarda tus apuestas</p>
-
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchTab('login')">Iniciar sesión</button>
       <button class="auth-tab" onclick="switchTab('register')">Registrarse</button>
     </div>
-
-    <!-- Login -->
     <div id="loginForm">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="tu@email.com" />
-      </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" />
-      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="tu@email.com" /></div>
+      <div class="form-group"><label>Contraseña</label><input type="password" id="loginPassword" placeholder="••••••••" /></div>
       <button class="btn-primary" id="btnLogin" onclick="login()">Entrar</button>
     </div>
-
-    <!-- Register -->
     <div id="registerForm" style="display:none">
-      <div class="form-group">
-        <label>Nombre de usuario</label>
-        <input type="text" id="regUsername" placeholder="Tu nombre" />
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="regEmail" placeholder="tu@email.com" />
-      </div>
-      <div class="form-group">
-        <label>Contraseña (mín. 8 caracteres)</label>
-        <input type="password" id="regPassword" placeholder="••••••••" />
-      </div>
+      <div class="form-group"><label>Nombre de usuario</label><input type="text" id="regUsername" placeholder="Tu nombre" /></div>
+      <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="tu@email.com" /></div>
+      <div class="form-group"><label>Contraseña (mín. 8 caracteres)</label><input type="password" id="regPassword" placeholder="••••••••" /></div>
       <button class="btn-primary" id="btnRegister" onclick="register()">Crear cuenta</button>
     </div>
-
     <p class="auth-error" id="authError"></p>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     PANTALLA PRINCIPAL (después de login)
-══════════════════════════════════════════════════════════ -->
+<!-- ══ APP SCREEN ══ -->
 <div id="appScreen">
   <header>
     <div class="header-left">
@@ -72,6 +121,12 @@
       <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
     </div>
   </header>
+
+  <!-- Banner de estado de cuotas -->
+  <div class="odds-banner" id="oddsBanner" style="display:none">
+    <span><span class="dot-stale" id="oddsDot"></span> <span id="oddsStatus">Cargando cuotas...</span></span>
+    <button class="btn-refresh" id="btnRefreshOdds" onclick="loadOdds(true)">↻ Actualizar cuotas</button>
+  </div>
 
   <div class="controls">
     <label>Grupo</label>
@@ -94,25 +149,24 @@
           <th>Partido</th>
           <th>Hora VET</th>
           <th>Sede</th>
-          <th>Tipos de apuesta</th>
+          <th>Apuestas y cuotas</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
-    <div class="no-results" id="noResults">No se encontraron partidos con ese filtro.</div>
+    <div class="no-results" id="noResults">No se encontraron partidos.</div>
   </div>
   <p class="footer-bar" id="countLabel"></p>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     MODAL DE APUESTA
-══════════════════════════════════════════════════════════ -->
+<!-- ══ MODAL DE APUESTA ══ -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h3 id="modalTitle">Registrar apuesta</h3>
     <p class="modal-sub" id="modalSub"></p>
+    <div id="modalOddsInfo" style="margin-bottom:1rem; padding:10px 12px; background:var(--bg); border-radius:8px; font-size:0.8rem; color:var(--muted); display:none"></div>
     <div class="form-group">
-      <label>Monto apostado (Bs / USD / lo que uses)</label>
+      <label>Monto apostado</label>
       <input type="number" id="modalAmount" placeholder="ej: 10" min="0" step="0.01" />
     </div>
     <div class="form-group">
@@ -128,17 +182,16 @@
   </div>
 </div>
 
-<!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// CONFIGURACIÓN — cambia esta URL por la de tu backend en Railway
+// CONFIG — pon tu URL de Railway aquí
 // ══════════════════════════════════════════════════════════════
 const API_URL = 'https://morocho-production.up.railway.app'; // ← CAMBIA ESTO
 
 // ══════════════════════════════════════════════════════════════
-// DATOS
+// DATOS PARTIDOS
 // ══════════════════════════════════════════════════════════════
 const BETS = [
   { cls: 't-result',  label: '1X2' },
@@ -229,11 +282,11 @@ const matches = [
 // ══════════════════════════════════════════════════════════════
 // ESTADO
 // ══════════════════════════════════════════════════════════════
-let token    = localStorage.getItem('token')    || null;
-let user     = JSON.parse(localStorage.getItem('user') || 'null');
-let savedBets = {}; // { "matchId|betType": { id, amount, prediction } }
+let token     = localStorage.getItem('token') || null;
+let user      = JSON.parse(localStorage.getItem('user') || 'null');
+let savedBets = {};
+let oddsData  = {}; // cuotas cargadas desde el backend
 
-// Modal state
 let modalMatch   = null;
 let modalBetType = null;
 let modalBetId   = null;
@@ -242,11 +295,8 @@ let modalBetId   = null;
 // INIT
 // ══════════════════════════════════════════════════════════════
 (function init() {
-  if (token && user) {
-    showApp();
-  } else {
-    document.getElementById('authScreen').style.display = 'flex';
-  }
+  if (token && user) showApp();
+  else document.getElementById('authScreen').style.display = 'flex';
 })();
 
 // ══════════════════════════════════════════════════════════════
@@ -262,33 +312,22 @@ function switchTab(tab) {
 }
 
 async function login() {
-  const email    = document.getElementById('loginEmail').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
   setAuthError('');
   if (!email || !password) return setAuthError('Completa todos los campos');
-
   const btn = document.getElementById('btnLogin');
   btn.disabled = true; btn.textContent = 'Entrando...';
-
   try {
-    const res  = await fetch(`${API_URL}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    const res  = await fetch(`${API_URL}/api/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
-
-    token = data.token;
-    user  = data.user;
+    token = data.token; user = data.user;
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     showApp();
-  } catch (err) {
-    setAuthError(err.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Entrar';
-  }
+  } catch(err) { setAuthError(err.message); }
+  finally { btn.disabled = false; btn.textContent = 'Entrar'; }
 }
 
 async function register() {
@@ -298,42 +337,29 @@ async function register() {
   setAuthError('');
   if (!username || !email || !password) return setAuthError('Completa todos los campos');
   if (password.length < 8) return setAuthError('La contraseña debe tener al menos 8 caracteres');
-
   const btn = document.getElementById('btnRegister');
   btn.disabled = true; btn.textContent = 'Creando cuenta...';
-
   try {
-    const res  = await fetch(`${API_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password }),
-    });
+    const res  = await fetch(`${API_URL}/api/auth/register`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username, email, password}) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error al registrarse');
-
-    token = data.token;
-    user  = data.user;
+    token = data.token; user = data.user;
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     showApp();
-  } catch (err) {
-    setAuthError(err.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Crear cuenta';
-  }
+  } catch(err) { setAuthError(err.message); }
+  finally { btn.disabled = false; btn.textContent = 'Crear cuenta'; }
 }
 
 function logout() {
-  token = null; user = null; savedBets = {};
+  token = null; user = null; savedBets = {}; oddsData = {};
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   document.getElementById('appScreen').style.display  = 'none';
   document.getElementById('authScreen').style.display = 'flex';
 }
 
-function setAuthError(msg) {
-  document.getElementById('authError').textContent = msg;
-}
+function setAuthError(msg) { document.getElementById('authError').textContent = msg; }
 
 // ══════════════════════════════════════════════════════════════
 // APP
@@ -342,9 +368,9 @@ async function showApp() {
   document.getElementById('authScreen').style.display = 'none';
   document.getElementById('appScreen').style.display  = 'block';
   document.getElementById('userBadge').textContent    = `👤 ${user.username}`;
+  document.getElementById('oddsBanner').style.display = 'flex';
 
-  // Populate date filter
-  const dates      = [...new Set(matches.map(m => m.date))];
+  const dates = [...new Set(matches.map(m => m.date))];
   const dateSelect = document.getElementById('filterDate');
   dateSelect.innerHTML = '<option value="">Todas</option>';
   dates.forEach(d => {
@@ -357,43 +383,111 @@ async function showApp() {
   document.getElementById('filterDate').addEventListener('change', render);
   document.getElementById('searchTeam').addEventListener('input', render);
 
-  await loadBets();
+  await Promise.all([loadBets(), loadOdds()]);
   render();
 }
 
+// ══════════════════════════════════════════════════════════════
+// ODDS
+// ══════════════════════════════════════════════════════════════
+async function loadOdds(forceRefresh = false) {
+  const btn = document.getElementById('btnRefreshOdds');
+  const status = document.getElementById('oddsStatus');
+  const dot    = document.getElementById('oddsDot');
+  btn.disabled = true;
+  status.textContent = 'Cargando cuotas...';
+
+  try {
+    const url = forceRefresh ? `${API_URL}/api/odds?refresh=1` : `${API_URL}/api/odds`;
+    const res  = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    if (!res.ok) throw new Error('Error al cargar cuotas');
+    const data = await res.json();
+
+    oddsData = data.odds || {};
+
+    const count     = Object.keys(oddsData).length;
+    const fetchedAt = data.fetched_at ? new Date(data.fetched_at) : null;
+    const timeStr   = fetchedAt ? fetchedAt.toLocaleTimeString('es-VE', {hour:'2-digit', minute:'2-digit'}) : '—';
+    const isLive    = data.source === 'api_fresh';
+
+    dot.className   = isLive ? 'dot-live' : 'dot-stale';
+    status.textContent = count > 0
+      ? `${count} partidos con cuotas · actualizado ${timeStr}`
+      : 'Cuotas no disponibles aún (el torneo aún no empezó)';
+
+  } catch(err) {
+    status.textContent = 'No se pudieron cargar las cuotas';
+    dot.className = 'dot-stale';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Busca la cuota de un partido en oddsData por nombre de equipos
+function findOdds(home, away) {
+  const key = `${home}_${away}`.toLowerCase().replace(/\s+/g, '_');
+  if (oddsData[key]) return oddsData[key];
+  // Búsqueda flexible por palabras clave
+  for (const k of Object.keys(oddsData)) {
+    const h = oddsData[k].home?.toLowerCase() || '';
+    const a = oddsData[k].away?.toLowerCase() || '';
+    if (h.includes(home.toLowerCase().split(' ')[0]) &&
+        a.includes(away.toLowerCase().split(' ')[0])) {
+      return oddsData[k];
+    }
+  }
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════
+// BETS
+// ══════════════════════════════════════════════════════════════
 async function loadBets() {
   try {
-    const res  = await fetch(`${API_URL}/api/bets`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    const res  = await fetch(`${API_URL}/api/bets`, { headers: { 'Authorization': `Bearer ${token}` } });
     if (res.status === 401) { logout(); return; }
     const data = await res.json();
     savedBets = {};
     data.forEach(b => {
       savedBets[`${b.match_id}|${b.bet_type}`] = { id: b.id, amount: b.amount, prediction: b.prediction };
     });
-  } catch (err) {
-    console.error('Error cargando apuestas:', err);
-  }
+  } catch(err) { console.error('Error cargando apuestas:', err); }
 }
 
 // ══════════════════════════════════════════════════════════════
 // RENDER
 // ══════════════════════════════════════════════════════════════
 function matchId(m) {
-  return `${m.g}_${m.home}_${m.away}_${m.date}`.replace(/\s+/g, '').replace(/[^a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]/g, '');
+  return `${m.g}_${m.home}_${m.away}_${m.date}`.replace(/\s+/g,'').replace(/[^a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]/g,'');
+}
+
+function buildOddsRow(m) {
+  const o = findOdds(m.home, m.away);
+  if (!o) return '';
+
+  const pills = [];
+  if (o['1x2']?.home) pills.push(`<span class="odd-pill home-pill"><span class="odd-label">L</span><span class="odd-val">${o['1x2'].home.toFixed(2)}</span></span>`);
+  if (o['1x2']?.draw) pills.push(`<span class="odd-pill draw-pill"><span class="odd-label">E</span><span class="odd-val">${o['1x2'].draw.toFixed(2)}</span></span>`);
+  if (o['1x2']?.away) pills.push(`<span class="odd-pill away-pill"><span class="odd-label">V</span><span class="odd-val">${o['1x2'].away.toFixed(2)}</span></span>`);
+  if (o.goals?.over25)  pills.push(`<span class="odd-pill over-pill"><span class="odd-label">+2.5</span><span class="odd-val">${o.goals.over25.toFixed(2)}</span></span>`);
+  if (o.goals?.under25) pills.push(`<span class="odd-pill under-pill"><span class="odd-label">-2.5</span><span class="odd-val">${o.goals.under25.toFixed(2)}</span></span>`);
+  if (o.btts?.yes) pills.push(`<span class="odd-pill btts-yes"><span class="odd-label">Ambos Sí</span><span class="odd-val">${o.btts.yes.toFixed(2)}</span></span>`);
+  if (o.btts?.no)  pills.push(`<span class="odd-pill btts-no"><span class="odd-label">Ambos No</span><span class="odd-val">${o.btts.no.toFixed(2)}</span></span>`);
+
+  if (!pills.length) return '';
+  return `<div class="odds-row">${pills.join('')}</div>`;
 }
 
 function buildTags(m) {
   const mid = matchId(m);
   return BETS.map(b => {
-    const key     = `${mid}|${b.label}`;
-    const saved   = savedBets[key];
-    const classes = `tag ${b.cls}${saved ? ' saved' : ''}`;
-    const title   = saved
-      ? `Apuesta guardada: ${saved.prediction || '—'} · ${saved.amount ? '$'+saved.amount : 'sin monto'}`
+    const key    = `${mid}|${b.label}`;
+    const saved  = savedBets[key];
+    const cls    = `tag ${b.cls}${saved ? ' saved' : ''}`;
+    const title  = saved
+      ? `Guardada: ${saved.prediction || '—'} · ${saved.amount ? '$'+saved.amount : 'sin monto'}`
       : 'Clic para registrar apuesta';
-    return `<span class="${classes}" title="${title}" onclick="openModal(${JSON.stringify(m).replace(/"/g,"'")}, '${b.label}')">${b.label}</span>`;
+    return `<span class="${cls}" title="${title}" onclick="openModal(${JSON.stringify(m).replace(/"/g,"'")}, '${b.label}')">${b.label}</span>`;
   }).join('');
 }
 
@@ -414,14 +508,10 @@ function render() {
   const countEl = document.getElementById('countLabel');
 
   if (!filtered.length) {
-    tbody.innerHTML = '';
-    noRes.style.display = 'block';
-    countEl.textContent = '';
-    return;
+    tbody.innerHTML = ''; noRes.style.display = 'block'; countEl.textContent = ''; return;
   }
-
   noRes.style.display = 'none';
-  countEl.textContent = `${filtered.length} partido${filtered.length !== 1 ? 's' : ''} mostrado${filtered.length !== 1 ? 's' : ''}`;
+  countEl.textContent = `${filtered.length} partido${filtered.length!==1?'s':''} mostrado${filtered.length!==1?'s':''}`;
 
   tbody.innerHTML = filtered.map(m => `
     <tr>
@@ -429,7 +519,10 @@ function render() {
       <td data-label="Partido" class="match-name">${m.home} <span class="vs">vs</span> ${m.away}</td>
       <td data-label="Hora VET" class="time-cell">${m.time}<br><span class="date-sub">${m.date}</span></td>
       <td data-label="Sede" class="venue">${m.venue}</td>
-      <td data-label="Apuestas"><div class="tags">${buildTags(m)}</div></td>
+      <td data-label="Apuestas">
+        <div class="tags">${buildTags(m)}</div>
+        ${buildOddsRow(m)}
+      </td>
     </tr>
   `).join('');
 }
@@ -438,13 +531,11 @@ function render() {
 // MODAL
 // ══════════════════════════════════════════════════════════════
 function openModal(m, betType) {
-  modalMatch   = m;
-  modalBetType = betType;
-
-  const mid     = matchId(m);
-  const key     = `${mid}|${betType}`;
+  modalMatch = m; modalBetType = betType;
+  const mid      = matchId(m);
+  const key      = `${mid}|${betType}`;
   const existing = savedBets[key];
-  modalBetId    = existing ? existing.id : null;
+  modalBetId     = existing ? existing.id : null;
 
   document.getElementById('modalTitle').textContent = `${betType} — ${m.home} vs ${m.away}`;
   document.getElementById('modalSub').textContent   = `${m.date} · ${m.time} VET · ${m.venue}`;
@@ -452,6 +543,28 @@ function openModal(m, betType) {
   document.getElementById('modalPrediction').value  = existing?.prediction || '';
   document.getElementById('modalError').textContent = '';
   document.getElementById('btnDeleteBet').style.display = existing ? 'block' : 'none';
+
+  // Mostrar cuotas relevantes en el modal
+  const oddsInfo = document.getElementById('modalOddsInfo');
+  const o = findOdds(m.home, m.away);
+  if (o) {
+    let infoHtml = '';
+    if (betType === '1X2' && o['1x2'])
+      infoHtml = `🏠 <b>${m.home}</b> ${o['1x2'].home?.toFixed(2) || '—'} &nbsp;·&nbsp; Empate ${o['1x2'].draw?.toFixed(2) || '—'} &nbsp;·&nbsp; ✈️ <b>${m.away}</b> ${o['1x2'].away?.toFixed(2) || '—'}`;
+    else if (betType === 'Goles +/-' && o.goals)
+      infoHtml = `⚽ Más de 2.5: <b>${o.goals.over25?.toFixed(2) || '—'}</b> &nbsp;·&nbsp; Menos de 2.5: <b>${o.goals.under25?.toFixed(2) || '—'}</b>`;
+    else if (betType === 'Ambos anotan' && o.btts)
+      infoHtml = `Ambos anotan Sí: <b>${o.btts.yes?.toFixed(2) || '—'}</b> &nbsp;·&nbsp; No: <b>${o.btts.no?.toFixed(2) || '—'}</b>`;
+
+    if (infoHtml) {
+      oddsInfo.innerHTML = `📊 Cuotas de referencia: ${infoHtml}`;
+      oddsInfo.style.display = 'block';
+    } else {
+      oddsInfo.style.display = 'none';
+    }
+  } else {
+    oddsInfo.style.display = 'none';
+  }
 
   document.getElementById('modalOverlay').classList.add('open');
 }
@@ -465,71 +578,38 @@ async function saveBet() {
   const amount     = document.getElementById('modalAmount').value;
   const prediction = document.getElementById('modalPrediction').value.trim();
   document.getElementById('modalError').textContent = '';
-
   const mid = matchId(modalMatch);
   try {
     const res = await fetch(`${API_URL}/api/bets`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        match_id:   mid,
-        home:       modalMatch.home,
-        away:       modalMatch.away,
-        match_date: modalMatch.date,
-        match_time: modalMatch.time,
-        venue:      modalMatch.venue,
-        grupo:      modalMatch.g,
-        bet_type:   modalBetType,
-        amount:     amount ? parseFloat(amount) : null,
-        prediction: prediction || null,
-      }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ match_id:mid, home:modalMatch.home, away:modalMatch.away, match_date:modalMatch.date, match_time:modalMatch.time, venue:modalMatch.venue, grupo:modalMatch.g, bet_type:modalBetType, amount: amount ? parseFloat(amount) : null, prediction: prediction || null }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error al guardar');
-
     savedBets[`${mid}|${modalBetType}`] = { id: data.id, amount: data.amount, prediction: data.prediction };
-    closeModal();
-    render();
-    showToast('✓ Apuesta guardada');
-  } catch (err) {
-    document.getElementById('modalError').textContent = err.message;
-  }
+    closeModal(); render(); showToast('✓ Apuesta guardada');
+  } catch(err) { document.getElementById('modalError').textContent = err.message; }
 }
 
 async function deleteBet() {
   if (!modalBetId) return;
   try {
-    const res = await fetch(`${API_URL}/api/bets/${modalBetId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` },
-    });
+    const res = await fetch(`${API_URL}/api/bets/${modalBetId}`, { method:'DELETE', headers:{'Authorization':`Bearer ${token}`} });
     if (!res.ok) throw new Error('Error al eliminar');
-
     const mid = matchId(modalMatch);
     delete savedBets[`${mid}|${modalBetType}`];
-    closeModal();
-    render();
-    showToast('Apuesta eliminada');
-  } catch (err) {
-    document.getElementById('modalError').textContent = err.message;
-  }
+    closeModal(); render(); showToast('Apuesta eliminada');
+  } catch(err) { document.getElementById('modalError').textContent = err.message; }
 }
 
-// Cerrar modal al hacer clic fuera
 document.getElementById('modalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
 
-// ══════════════════════════════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════════════════════════════
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 </script>
