@@ -423,28 +423,6 @@ async function loadOdds(forceRefresh = false) {
   }
 }
 
-// Busca la cuota de un partido en oddsData por nombre de equipos
-// Diccionario de nombres: español → inglés (como los devuelve la API)
-const TEAM_NAMES = {
-  'México': 'Mexico', 'Brasil': 'Brazil', 'Corea del Sur': 'South Korea',
-  'Chequia': 'Czech Republic', 'EE.UU.': 'USA', 'Países Bajos': 'Netherlands',
-  'C. de Marfil': 'Ivory Coast', 'Catar': 'Qatar', 'Irán': 'Iran',
-  'Bélgica': 'Belgium', 'Arabia Saudita': 'Saudi Arabia', 'Nueva Zelanda': 'New Zealand',
-  'Francia': 'France', 'Noruega': 'Norway', 'Argentina': 'Argentina',
-  'Jordania': 'Jordan', 'Austria': 'Austria', 'Argelia': 'Algeria',
-  'Portugal': 'Portugal', 'RD Congo': 'DR Congo', 'Inglaterra': 'England',
-  'Croacia': 'Croatia', 'Ghana': 'Ghana', 'Panamá': 'Panama',
-  'Colombia': 'Colombia', 'Uzbekistán': 'Uzbekistan', 'España': 'Spain',
-  'Cabo Verde': 'Cape Verde', 'Uruguay': 'Uruguay', 'Egipto': 'Egypt',
-  'Turquía': 'Turkey', 'Paraguay': 'Paraguay', 'Australia': 'Australia',
-  'Alemania': 'Germany', 'Curazao': 'Curaçao', 'Ecuador': 'Ecuador',
-  'Suecia': 'Sweden', 'Túnez': 'Tunisia', 'Japón': 'Japan',
-  'Haití': 'Haiti', 'Escocia': 'Scotland', 'Marruecos': 'Morocco',
-  'Bosnia & Herz.': 'Bosnia & Herzegovina', 'Canadá': 'Canada',
-  'Suiza': 'Switzerland', 'Sudáfrica': 'South Africa', 'Senegal': 'Senegal',
-  'Irak': 'Iraq', 'Irlanda': 'Ireland',
-};
-
 // ── DESPUÉS (CORRECTO) ──────────────────────────────────────────
 function findOdds(home, away) {
   // oddsData ya viene con nombres en español desde el backend
