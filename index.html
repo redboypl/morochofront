@@ -9,52 +9,127 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* ── ODDS EXTRAS ── */
-    .odds-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 6px;
+    /* ── DROPDOWN DE MERCADO ── */
+    .market-wrap {
+      position: relative;
+      display: inline-block;
     }
-    .odd-pill {
+    .tag-market {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 2px 8px;
+      gap: 5px;
+      padding: 3px 10px 3px 9px;
       border-radius: 99px;
-      font-size: 0.7rem;
+      font-size: 0.71rem;
       font-weight: 500;
-      background: #f0f0ec;
-      border: 1px solid #ddddd6;
-      color: var(--muted);
+      border: 1px solid;
       white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .1s, box-shadow .1s;
     }
-    .odd-pill .odd-label { color: var(--muted); font-size: 0.65rem; }
-    .odd-pill .odd-val   { color: var(--text);  font-weight: 600; font-family: 'DM Mono', monospace; }
-    .odd-pill.home-pill  { background: #e8f4fd; border-color: #b8d8f5; }
-    .odd-pill.draw-pill  { background: #fef9e7; border-color: #f5e6a3; }
-    .odd-pill.away-pill  { background: #fdf0f0; border-color: #f5c6c6; }
-    .odd-pill.over-pill  { background: var(--green-bg); border-color: var(--green-border); }
-    .odd-pill.under-pill { background: var(--amber-bg); border-color: var(--amber-border); }
-    .odd-pill.btts-yes      { background: var(--purple-bg); border-color: var(--purple-border); }
-    .odd-pill.btts-no       { background: var(--gray-bg);   border-color: var(--gray-border); }
-    .odd-pill.hcp-home-pill { background: #eef2ff; border-color: #c7d2fe; }
-    .odd-pill.hcp-away-pill { background: #fdf4ff; border-color: #e9d5ff; }
-    .odd-pill.fh-home-pill  { background: #ecfdf5; border-color: #a7f3d0; }
-    .odd-pill.fh-draw-pill  { background: #fffbeb; border-color: #fde68a; }
-    .odd-pill.fh-away-pill  { background: #fff1f2; border-color: #fecdd3; }
+    .tag-market:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+    .tag-market.open  { box-shadow: 0 0 0 2px var(--accent); transform: translateY(-1px); }
+    .tag-market.saved::before { content: '✓ '; font-size: 0.65rem; }
+    .tag-market .chevron {
+      font-size: 0.55rem;
+      opacity: 0.6;
+      transition: transform .2s;
+      line-height: 1;
+    }
+    .tag-market.open .chevron { transform: rotate(180deg); }
  
-    .odds-loading {
-      font-size: 0.72rem;
+    .market-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 500;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      padding: 10px;
+      min-width: 220px;
+      animation: popIn .15s ease;
+    }
+    .market-panel.open { display: block; }
+ 
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+ 
+    .panel-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       color: var(--muted);
-      font-style: italic;
-      margin-top: 4px;
+      margin-bottom: 7px;
+      padding: 0 2px;
     }
-    .odds-updated {
-      font-size: 0.68rem;
-      color: #bbb;
-      margin-top: 2px;
+ 
+    .odd-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .12s;
+      border: 1px solid transparent;
     }
+    .odd-row:hover { background: var(--bg); border-color: var(--border); }
+    .odd-row:not(:last-child) { margin-bottom: 3px; }
+ 
+    .odd-row-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+    .odd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .odd-dot.home  { background: #60a5fa; }
+    .odd-dot.draw  { background: #fbbf24; }
+    .odd-dot.away  { background: #f87171; }
+    .odd-dot.over  { background: #34d399; }
+    .odd-dot.under { background: #fb923c; }
+ 
+    .odd-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 130px;
+    }
+    .odd-val-big {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .odd-val-big.positive { color: var(--success); }
+    .odd-val-big.negative { color: var(--danger); }
+ 
+    .bet-hint {
+      font-size: 0.62rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid var(--border);
+    }
+    .odd-row.is-saved .odd-name::after {
+      content: ' ✓';
+      color: var(--success);
+      font-size: 0.65rem;
+    }
+ 
     .odds-banner {
       max-width: 1100px;
       margin: 0 auto 1rem;
@@ -459,32 +534,95 @@ function matchId(m) {
   return `${m.g}_${m.home}_${m.away}_${m.date}`.replace(/\s+/g,'').replace(/[^a-zA-Z0-9_áéíóúÁÉÍÓÚñÑ]/g,'');
 }
  
-function buildOddsRow(m) {
-  const o = findOdds(m.home, m.away);
-  if (!o) return '';
+// ── Dropdown de mercado ─────────────────────────────────────
+let activePanel = null;
  
-  const pills = [];
-  if (o['1x2']?.home) pills.push(`<span class="odd-pill home-pill"><span class="odd-label">L</span><span class="odd-val">${formatAmerican(o['1x2'].home)}</span></span>`);
-  if (o['1x2']?.draw) pills.push(`<span class="odd-pill draw-pill"><span class="odd-label">E</span><span class="odd-val">${formatAmerican(o['1x2'].draw)}</span></span>`);
-  if (o['1x2']?.away) pills.push(`<span class="odd-pill away-pill"><span class="odd-label">V</span><span class="odd-val">${formatAmerican(o['1x2'].away)}</span></span>`);
-  if (o.goals?.over25)  pills.push(`<span class="odd-pill over-pill"><span class="odd-label">+2.5</span><span class="odd-val">${formatAmerican(o.goals.over25)}</span></span>`);
-  if (o.goals?.under25) pills.push(`<span class="odd-pill under-pill"><span class="odd-label">-2.5</span><span class="odd-val">${formatAmerican(o.goals.under25)}</span></span>`);
+function closeAllPanels() {
+  if (activePanel) {
+    activePanel.panel.classList.remove('open');
+    activePanel.tag.classList.remove('open');
+    activePanel = null;
+  }
+}
  
-  if (!pills.length) return '';
-  return `<div class="odds-row">${pills.join('')}</div>`;
+function toggleMarket(wrapId, tagEl) {
+  const wrap  = document.getElementById(wrapId);
+  const panel = wrap.querySelector('.market-panel');
+  if (activePanel && activePanel.panel === panel) {
+    closeAllPanels();
+    return;
+  }
+  closeAllPanels();
+  panel.classList.add('open');
+  tagEl.classList.add('open');
+  activePanel = { panel, tag: tagEl };
+}
+ 
+function oddRow(m, betLabel, dotCls, name, val) {
+  const mid   = matchId(m);
+  const key   = `${mid}|${betLabel}`;
+  const saved = savedBets[key];
+  const formatted = formatAmerican(val);
+  const valCls = val > 0 ? 'positive' : 'negative';
+  const savedCls = saved ? ' is-saved' : '';
+  const mData = JSON.stringify(m).replace(/"/g, "'");
+  return `
+    <div class="odd-row${savedCls}" onclick="closeAllPanels();openModal(${mData}, '${betLabel}')">
+      <div class="odd-row-left">
+        <span class="odd-dot ${dotCls}"></span>
+        <span class="odd-name">${name}</span>
+      </div>
+      <span class="odd-val-big ${valCls}">${formatted}</span>
+    </div>`;
+}
+ 
+function buildMarketWrap(m, bet) {
+  const mid    = matchId(m);
+  const key    = `${mid}|${bet.label}`;
+  const saved  = savedBets[key];
+  const o      = findOdds(m.home, m.away);
+  const wrapId = `mw_${mid}_${bet.label.replace(/[^a-z0-9]/gi, '_')}`;
+  const tagCls = `tag-market ${bet.cls}${saved ? ' saved' : ''}`;
+  const mData  = JSON.stringify(m).replace(/"/g, "'");
+ 
+  let rows = '';
+  if (bet.label === '1X2' && o?.['1x2']) {
+    const d = o['1x2'];
+    rows += oddRow(m, bet.label, 'home',  m.home,         d.home);
+    rows += oddRow(m, bet.label, 'draw',  'Empate',       d.draw);
+    rows += oddRow(m, bet.label, 'away',  m.away,         d.away);
+  } else if (bet.label === 'Goles +/-' && o?.goals) {
+    const d = o.goals;
+    rows += oddRow(m, bet.label, 'over',  'Más de 2.5',   d.over25);
+    rows += oddRow(m, bet.label, 'under', 'Menos de 2.5', d.under25);
+  }
+ 
+  const hasOdds = rows !== '';
+  const noOddsHtml = `
+    <div style="font-size:0.78rem;color:var(--muted);padding:4px 2px">Cuotas no disponibles aún</div>
+    <div style="margin-top:8px;padding-top:7px;border-top:1px solid var(--border)">
+      <span style="font-size:0.72rem;cursor:pointer;color:var(--accent)"
+            onclick="closeAllPanels();openModal(${mData}, '${bet.label}')">
+        + Registrar apuesta sin cuota
+      </span>
+    </div>`;
+ 
+  return `
+    <div class="market-wrap" id="${wrapId}">
+      <span class="${tagCls}" onclick="toggleMarket('${wrapId}', this)">
+        ${bet.label} <span class="chevron">▼</span>
+      </span>
+      <div class="market-panel">
+        ${hasOdds
+          ? `<div class="panel-label">Cuotas americanas</div>${rows}<div class="bet-hint">Clic en una cuota para registrar tu apuesta</div>`
+          : noOddsHtml
+        }
+      </div>
+    </div>`;
 }
  
 function buildTags(m) {
-  const mid = matchId(m);
-  return BETS.map(b => {
-    const key    = `${mid}|${b.label}`;
-    const saved  = savedBets[key];
-    const cls    = `tag ${b.cls}${saved ? ' saved' : ''}`;
-    const title  = saved
-      ? `Guardada: ${saved.prediction || '—'} · ${saved.amount ? '$'+saved.amount : 'sin monto'}`
-      : 'Clic para registrar apuesta';
-    return `<span class="${cls}" title="${title}" onclick="openModal(${JSON.stringify(m).replace(/"/g,"'")}, '${b.label}')">${b.label}</span>`;
-  }).join('');
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px">${BETS.map(b => buildMarketWrap(m, b)).join('')}</div>`;
 }
  
 function render() {
@@ -515,10 +653,7 @@ function render() {
       <td data-label="Partido" class="match-name">${m.home} <span class="vs">vs</span> ${m.away}</td>
       <td data-label="Hora VET" class="time-cell">${m.time}<br><span class="date-sub">${m.date}</span></td>
       <td data-label="Sede" class="venue">${m.venue}</td>
-      <td data-label="Apuestas">
-        <div class="tags">${buildTags(m)}</div>
-        ${buildOddsRow(m)}
-      </td>
+      <td data-label="Apuestas">${buildTags(m)}</td>
     </tr>
   `).join('');
 }
@@ -599,6 +734,13 @@ async function deleteBet() {
  
 document.getElementById('modalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+ 
+// Cerrar dropdown al hacer clic fuera
+document.addEventListener('click', function(e) {
+  if (activePanel && !e.target.closest('.market-wrap')) {
+    closeAllPanels();
+  }
 });
  
 function showToast(msg) {
