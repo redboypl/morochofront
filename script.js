@@ -265,8 +265,12 @@ async function loadBets() {
 }
 
 function updateBetsBadge() {
-  const count = Object.keys(savedBets).length;
-  const badge = document.getElementById('betsBadge');
+  // Contar tickets reales: cada combo_ticket_id cuenta como 1, cada simple como 1
+  const allBets = Object.values(savedBets).map(b => b.raw).filter(Boolean);
+  const comboIds = new Set(allBets.filter(b => b.ticket_type === 'combo' && b.combo_ticket_id).map(b => b.combo_ticket_id));
+  const singles  = allBets.filter(b => b.ticket_type !== 'combo' || !b.combo_ticket_id).length;
+  const count    = comboIds.size + singles;
+  const badge    = document.getElementById('betsBadge');
   if (count > 0) { badge.textContent = count; badge.style.display = 'inline-flex'; }
   else { badge.style.display = 'none'; }
 }
@@ -298,15 +302,49 @@ function renderMisApuestas(bets) {
   }
 
   // ── Summary ──
-  const total      = bets.length;
+  // Contar tickets reales (cada combo = 1 ticket, cada simple = 1 ticket)
+  const comboTicketIds = new Set(bets.filter(b => b.ticket_type === 'combo' && b.combo_ticket_id).map(b => b.combo_ticket_id));
+  const singleCount    = bets.filter(b => b.ticket_type !== 'combo' || !b.combo_ticket_id).length;
+  const total          = comboTicketIds.size + singleCount;
+
   const conMonto   = bets.filter(b => b.amount);
-  const montoTotal = conMonto.reduce((s, b) => s + parseFloat(b.amount || 0), 0);
+  // Para montos: en combinadas contar el monto una sola vez por combo_ticket_id
+  const montoTotal = (() => {
+    const seen = new Set();
+    return bets.reduce((sum, b) => {
+      if (b.ticket_type === 'combo' && b.combo_ticket_id) {
+        if (seen.has(b.combo_ticket_id)) return sum;
+        seen.add(b.combo_ticket_id);
+      }
+      return sum + parseFloat(b.amount || 0);
+    }, 0);
+  })();
   const partidos   = new Set(bets.map(b => b.match_id)).size;
-  const gananciaTotal = conMonto.reduce((s, b) => {
-    const decimal = b.odd_value != null ? americanToDecimal(b.odd_value) : null;
-    return decimal ? s + (parseFloat(b.amount) * decimal - parseFloat(b.amount)) : s;
-  }, 0);
-  const conNomio = conMonto.filter(b => b.odd_value != null).length;
+  const gananciaTotal = (() => {
+    // Para combinadas, calcular ganancia del ticket completo (cuota combinada × monto)
+    const comboGroups = {};
+    bets.forEach(b => {
+      if (b.ticket_type === 'combo' && b.combo_ticket_id) {
+        if (!comboGroups[b.combo_ticket_id]) comboGroups[b.combo_ticket_id] = { bets: [], amount: b.amount };
+        comboGroups[b.combo_ticket_id].bets.push(b);
+      }
+    });
+    let total = 0;
+    for (const g of Object.values(comboGroups)) {
+      const withOdds = g.bets.filter(b => b.odd_value != null);
+      if (withOdds.length > 1 && g.amount) {
+        const dec = withOdds.reduce((acc, b) => acc * americanToDecimal(b.odd_value), 1);
+        total += parseFloat(g.amount) * dec - parseFloat(g.amount);
+      }
+    }
+    // Sumar simples
+    bets.filter(b => b.ticket_type !== 'combo' || !b.combo_ticket_id).forEach(b => {
+      const decimal = b.odd_value != null ? americanToDecimal(b.odd_value) : null;
+      if (decimal && b.amount) total += parseFloat(b.amount) * decimal - parseFloat(b.amount);
+    });
+    return total;
+  })();
+  const conNomio = bets.filter(b => b.odd_value != null).length;
 
   summary.innerHTML = `
     <div class="summary-card"><div class="s-val">${total}</div><div class="s-label">Apuestas activas</div></div>
@@ -351,8 +389,9 @@ function renderMisApuestas(bets) {
         <span class="bet-type-pill">${b.bet_type}</span>
         ${b.prediction ? `<span class="bet-prediction">→ ${b.prediction}</span>` : ''}
         ${b.odd_value != null ? `<span style="font-size:0.75rem;color:var(--muted)">${formatAmerican(b.odd_value)}</span>` : ''}
-        <button class="btn-del-bet" onclick="deleteBetFromList(${b.id}, '${b.match_id}', '${b.bet_type}')">✕</button>
       </div>`).join('');
+
+    const comboIdsToDelete = group.bets.map(b => b.id);
 
     html += `
       <div class="bet-card" style="border-left:3px solid var(--accent)">
@@ -361,6 +400,7 @@ function renderMisApuestas(bets) {
             <span style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;background:var(--accent);color:#fff;border-radius:6px;padding:2px 8px;">COMBINADA</span>
             <span style="font-size:0.8rem;color:var(--muted)">${group.bets.length} selecciones</span>
             ${combinedAmerican != null ? `<span style="font-family:'DM Mono',monospace;font-size:0.82rem;font-weight:600">${formatAmerican(combinedAmerican)} <span style="font-size:0.7rem;font-weight:400;color:var(--muted)">(×${combinedDecimal.toFixed(2)})</span></span>` : ''}
+            <button class="btn-del-bet" style="margin-left:auto" onclick="deleteComboTicket(${JSON.stringify(comboIdsToDelete)})">✕ Eliminar</button>
           </div>
           ${selHtml}
           <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
@@ -416,6 +456,19 @@ async function deleteBetFromList(betId, mId, betType) {
     if (!res.ok) throw new Error('Error al eliminar');
     delete savedBets[`${mId}|${betType}`];
     showToast('Apuesta eliminada');
+    updateBetsBadge();
+    render();
+    await loadBets();
+  } catch(err) { showToast('Error al eliminar'); }
+}
+
+async function deleteComboTicket(ids) {
+  if (!confirm('¿Eliminar toda la apuesta combinada?')) return;
+  try {
+    await Promise.all(ids.map(id =>
+      fetch(`${API_URL}/api/bets/${id}`, { method:'DELETE', headers:{'Authorization':`Bearer ${token}`} })
+    ));
+    showToast('Combinada eliminada');
     updateBetsBadge();
     render();
     await loadBets();
