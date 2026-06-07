@@ -424,17 +424,36 @@ async function loadOdds(forceRefresh = false) {
 }
 
 // Busca la cuota de un partido en oddsData por nombre de equipos
+// Diccionario de nombres: español → inglés (como los devuelve la API)
+const TEAM_NAMES = {
+  'México': 'Mexico', 'Brasil': 'Brazil', 'Corea del Sur': 'South Korea',
+  'Chequia': 'Czech Republic', 'EE.UU.': 'USA', 'Países Bajos': 'Netherlands',
+  'C. de Marfil': 'Ivory Coast', 'Catar': 'Qatar', 'Irán': 'Iran',
+  'Bélgica': 'Belgium', 'Arabia Saudita': 'Saudi Arabia', 'Nueva Zelanda': 'New Zealand',
+  'Francia': 'France', 'Noruega': 'Norway', 'Argentina': 'Argentina',
+  'Jordania': 'Jordan', 'Austria': 'Austria', 'Argelia': 'Algeria',
+  'Portugal': 'Portugal', 'RD Congo': 'DR Congo', 'Inglaterra': 'England',
+  'Croacia': 'Croatia', 'Ghana': 'Ghana', 'Panamá': 'Panama',
+  'Colombia': 'Colombia', 'Uzbekistán': 'Uzbekistan', 'España': 'Spain',
+  'Cabo Verde': 'Cape Verde', 'Uruguay': 'Uruguay', 'Egipto': 'Egypt',
+  'Turquía': 'Turkey', 'Paraguay': 'Paraguay', 'Australia': 'Australia',
+  'Alemania': 'Germany', 'Curazao': 'Curaçao', 'Ecuador': 'Ecuador',
+  'Suecia': 'Sweden', 'Túnez': 'Tunisia', 'Japón': 'Japan',
+  'Haití': 'Haiti', 'Escocia': 'Scotland', 'Marruecos': 'Morocco',
+  'Bosnia & Herz.': 'Bosnia & Herzegovina', 'Canadá': 'Canada',
+  'Suiza': 'Switzerland', 'Sudáfrica': 'South Africa', 'Senegal': 'Senegal',
+  'Irak': 'Iraq', 'Irlanda': 'Ireland',
+};
+
 function findOdds(home, away) {
-  const key = `${home}_${away}`.toLowerCase().replace(/\s+/g, '_');
-  if (oddsData[key]) return oddsData[key];
-  // Búsqueda flexible por palabras clave
-  for (const k of Object.keys(oddsData)) {
-    const h = oddsData[k].home?.toLowerCase() || '';
-    const a = oddsData[k].away?.toLowerCase() || '';
-    if (h.includes(home.toLowerCase().split(' ')[0]) &&
-        a.includes(away.toLowerCase().split(' ')[0])) {
-      return oddsData[k];
-    }
+  const h = TEAM_NAMES[home] || home;
+  const a = TEAM_NAMES[away] || away;
+  
+  // Búsqueda directa por nombre en inglés
+  for (const key of Object.keys(oddsData)) {
+    const o = oddsData[key];
+    if (o.home === h && o.away === a) return o;
+    if (o.home === a && o.away === h) return o; // por si están invertidos
   }
   return null;
 }
