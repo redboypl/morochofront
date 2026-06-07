@@ -257,7 +257,7 @@ function updatePotentialWin() {
   box.style.display = 'block';
 }
 
-
+function formatAmerican(odd) {
   if (odd === null || odd === undefined) return '—';
   return odd > 0 ? `+${odd}` : `${odd}`;
 }
