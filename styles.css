@@ -699,3 +699,289 @@ th:nth-child(5) { }
 }
 .btn-refresh:hover { border-color: var(--accent); color: var(--text); }
 .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── DROPDOWN DE MERCADO ── */
+    .market-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .tag-market {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px 3px 9px;
+      border-radius: 99px;
+      font-size: 0.71rem;
+      font-weight: 500;
+      border: 1px solid;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .1s, box-shadow .1s;
+    }
+    .tag-market:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.1); }
+    .tag-market.open  { box-shadow: 0 0 0 2px var(--accent); transform: translateY(-1px); }
+    .tag-market.saved::before { content: '✓ '; font-size: 0.65rem; }
+    .tag-market .chevron {
+      font-size: 0.55rem;
+      opacity: 0.6;
+      transition: transform .2s;
+      line-height: 1;
+    }
+    .tag-market.open .chevron { transform: rotate(180deg); }
+ 
+    .market-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 500;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      padding: 10px;
+      min-width: 220px;
+      animation: popIn .15s ease;
+    }
+    .market-panel.open { display: block; }
+ 
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+ 
+    .panel-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 7px;
+      padding: 0 2px;
+    }
+ 
+    .odd-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background .12s;
+      border: 1px solid transparent;
+    }
+    .odd-row:hover { background: var(--bg); border-color: var(--border); }
+    .odd-row:not(:last-child) { margin-bottom: 3px; }
+ 
+    .odd-row-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+    .odd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .odd-dot.home  { background: #60a5fa; }
+    .odd-dot.draw  { background: #fbbf24; }
+    .odd-dot.away  { background: #f87171; }
+    .odd-dot.over  { background: #34d399; }
+    .odd-dot.under { background: #fb923c; }
+ 
+    .odd-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 130px;
+    }
+    .odd-val-big {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .odd-val-big.positive { color: var(--success); }
+    .odd-val-big.negative { color: var(--danger); }
+ 
+    .bet-hint {
+      font-size: 0.62rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid var(--border);
+    }
+    .odd-row.is-saved .odd-name::after {
+      content: ' ✓';
+      color: var(--success);
+      font-size: 0.65rem;
+    }
+ 
+    .odds-banner {
+      max-width: 1100px;
+      margin: 0 auto 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .odds-banner span { display: flex; align-items: center; gap: 6px; }
+    .dot-live { width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block; }
+    .dot-stale{ width:8px; height:8px; border-radius:50%; background:#f59e0b; display:inline-block; }
+    .btn-refresh {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-refresh:hover { border-color: var(--accent); color: var(--text); }
+    .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── NAV TABS ── */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      max-width: 1100px;
+      margin: 0 auto 1rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+    .nav-tab {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .nav-tab .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border-radius: 99px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      margin-left: 6px;
+    }
+
+    /* ── MIS APUESTAS ── */
+    #misApuestasView { display: none; max-width: 1100px; margin: 0 auto; }
+    .bets-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.2rem;
+    }
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      text-align: center;
+    }
+    .summary-card .s-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+    }
+    .summary-card .s-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .bets-list { display: flex; flex-direction: column; gap: 10px; }
+    .bet-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .bet-card-left { flex: 1; min-width: 0; }
+    .bet-match {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .bet-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .bet-type-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 99px;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      margin-right: 6px;
+    }
+    .bet-prediction {
+      font-size: 0.8rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .bet-card-right { text-align: right; flex-shrink: 0; }
+    .bet-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .bet-date { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .btn-del-bet {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border: 1px solid var(--danger, #f87171);
+      color: var(--danger, #f87171);
+      background: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .15s;
+    }
+    .btn-del-bet:hover { background: var(--danger, #f87171); color: #fff; }
+    .no-bets {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .no-bets .no-bets-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
