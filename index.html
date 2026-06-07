@@ -423,7 +423,11 @@ async function loadOdds(forceRefresh = false) {
   }
 }
 
-// ── DESPUÉS (CORRECTO) ──────────────────────────────────────────
+function formatAmerican(odd) {
+  if (odd === null || odd === undefined) return '—';
+  return odd > 0 ? `+${odd}` : `${odd}`;
+}
+
 function findOdds(home, away) {
   // oddsData ya viene con nombres en español desde el backend
   for (const key of Object.keys(oddsData)) {
@@ -461,13 +465,13 @@ function buildOddsRow(m) {
   if (!o) return '';
 
   const pills = [];
-  if (o['1x2']?.home) pills.push(`<span class="odd-pill home-pill"><span class="odd-label">L</span><span class="odd-val">${o['1x2'].home.toFixed(2)}</span></span>`);
-  if (o['1x2']?.draw) pills.push(`<span class="odd-pill draw-pill"><span class="odd-label">E</span><span class="odd-val">${o['1x2'].draw.toFixed(2)}</span></span>`);
-  if (o['1x2']?.away) pills.push(`<span class="odd-pill away-pill"><span class="odd-label">V</span><span class="odd-val">${o['1x2'].away.toFixed(2)}</span></span>`);
-  if (o.goals?.over25)  pills.push(`<span class="odd-pill over-pill"><span class="odd-label">+2.5</span><span class="odd-val">${o.goals.over25.toFixed(2)}</span></span>`);
-  if (o.goals?.under25) pills.push(`<span class="odd-pill under-pill"><span class="odd-label">-2.5</span><span class="odd-val">${o.goals.under25.toFixed(2)}</span></span>`);
-  if (o.btts?.yes) pills.push(`<span class="odd-pill btts-yes"><span class="odd-label">Ambos Sí</span><span class="odd-val">${o.btts.yes.toFixed(2)}</span></span>`);
-  if (o.btts?.no)  pills.push(`<span class="odd-pill btts-no"><span class="odd-label">Ambos No</span><span class="odd-val">${o.btts.no.toFixed(2)}</span></span>`);
+  if (o['1x2']?.home) pills.push(`<span class="odd-pill home-pill"><span class="odd-label">L</span><span class="odd-val">${formatAmerican(o['1x2'].home)}</span></span>`);
+  if (o['1x2']?.draw) pills.push(`<span class="odd-pill draw-pill"><span class="odd-label">E</span><span class="odd-val">${formatAmerican(o['1x2'].draw)}</span></span>`);
+  if (o['1x2']?.away) pills.push(`<span class="odd-pill away-pill"><span class="odd-label">V</span><span class="odd-val">${formatAmerican(o['1x2'].away)}</span></span>`);
+  if (o.goals?.over25)  pills.push(`<span class="odd-pill over-pill"><span class="odd-label">+2.5</span><span class="odd-val">${formatAmerican(o.goals.over25)}</span></span>`);
+  if (o.goals?.under25) pills.push(`<span class="odd-pill under-pill"><span class="odd-label">-2.5</span><span class="odd-val">${formatAmerican(o.goals.under25)}</span></span>`);
+  if (o.btts?.yes) pills.push(`<span class="odd-pill btts-yes"><span class="odd-label">Ambos Sí</span><span class="odd-val">${formatAmerican(o.btts.yes)}</span></span>`);
+  if (o.btts?.no)  pills.push(`<span class="odd-pill btts-no"><span class="odd-label">Ambos No</span><span class="odd-val">${formatAmerican(o.btts.no)}</span></span>`);
 
   if (!pills.length) return '';
   return `<div class="odds-row">${pills.join('')}</div>`;
@@ -545,11 +549,11 @@ function openModal(m, betType) {
   if (o) {
     let infoHtml = '';
     if (betType === '1X2' && o['1x2'])
-      infoHtml = `🏠 <b>${m.home}</b> ${o['1x2'].home?.toFixed(2) || '—'} &nbsp;·&nbsp; Empate ${o['1x2'].draw?.toFixed(2) || '—'} &nbsp;·&nbsp; ✈️ <b>${m.away}</b> ${o['1x2'].away?.toFixed(2) || '—'}`;
+      infoHtml = `🏠 <b>${m.home}</b> ${formatAmerican(o['1x2'].home)} &nbsp;·&nbsp; Empate ${formatAmerican(o['1x2'].draw)} &nbsp;·&nbsp; ✈️ <b>${m.away}</b> ${formatAmerican(o['1x2'].away)}`;
     else if (betType === 'Goles +/-' && o.goals)
-      infoHtml = `⚽ Más de 2.5: <b>${o.goals.over25?.toFixed(2) || '—'}</b> &nbsp;·&nbsp; Menos de 2.5: <b>${o.goals.under25?.toFixed(2) || '—'}</b>`;
+      infoHtml = `⚽ Más de 2.5: <b>${formatAmerican(o.goals.over25)}</b> &nbsp;·&nbsp; Menos de 2.5: <b>${formatAmerican(o.goals.under25)}</b>`;
     else if (betType === 'Ambos anotan' && o.btts)
-      infoHtml = `Ambos anotan Sí: <b>${o.btts.yes?.toFixed(2) || '—'}</b> &nbsp;·&nbsp; No: <b>${o.btts.no?.toFixed(2) || '—'}</b>`;
+      infoHtml = `Ambos anotan Sí: <b>${formatAmerican(o.btts.yes)}</b> &nbsp;·&nbsp; No: <b>${formatAmerican(o.btts.no)}</b>`;
 
     if (infoHtml) {
       oddsInfo.innerHTML = `📊 Cuotas de referencia: ${infoHtml}`;
