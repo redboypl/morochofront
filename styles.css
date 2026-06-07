@@ -413,7 +413,7 @@ th:nth-child(5) { }
   .tags { gap: 6px; }
 }
 
-/* ── DROPDOWN DE MERCADO ── */
+/* ── DROPDOWN DE MERCADO (extraído de index.html) ── */
 .market-wrap {
   position: relative;
   display: inline-block;
@@ -442,7 +442,7 @@ th:nth-child(5) { }
   line-height: 1;
 }
 .tag-market.open .chevron { transform: rotate(180deg); }
- 
+
 .market-panel {
   display: none;
   position: absolute;
@@ -458,12 +458,12 @@ th:nth-child(5) { }
   animation: popIn .15s ease;
 }
 .market-panel.open { display: block; }
- 
+
 @keyframes popIn {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
- 
+
 .panel-label {
   font-size: 0.65rem;
   font-weight: 600;
@@ -473,7 +473,7 @@ th:nth-child(5) { }
   margin-bottom: 7px;
   padding: 0 2px;
 }
- 
+
 .odd-row {
   display: flex;
   align-items: center;
@@ -487,7 +487,7 @@ th:nth-child(5) { }
 }
 .odd-row:hover { background: var(--bg); border-color: var(--border); }
 .odd-row:not(:last-child) { margin-bottom: 3px; }
- 
+
 .odd-row-left {
   display: flex;
   align-items: center;
@@ -500,7 +500,7 @@ th:nth-child(5) { }
 .odd-dot.away  { background: #f87171; }
 .odd-dot.over  { background: #34d399; }
 .odd-dot.under { background: #fb923c; }
- 
+
 .odd-name {
   font-size: 0.78rem;
   font-weight: 500;
@@ -519,7 +519,7 @@ th:nth-child(5) { }
 }
 .odd-val-big.positive { color: var(--success); }
 .odd-val-big.negative { color: var(--danger); }
- 
+
 .bet-hint {
   font-size: 0.62rem;
   color: var(--muted);
@@ -533,7 +533,7 @@ th:nth-child(5) { }
   color: var(--success);
   font-size: 0.65rem;
 }
- 
+
 .odds-banner {
   max-width: 1100px;
   margin: 0 auto 1rem;
