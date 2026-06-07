@@ -36,8 +36,13 @@
     .odd-pill.away-pill  { background: #fdf0f0; border-color: #f5c6c6; }
     .odd-pill.over-pill  { background: var(--green-bg); border-color: var(--green-border); }
     .odd-pill.under-pill { background: var(--amber-bg); border-color: var(--amber-border); }
-    .odd-pill.btts-yes   { background: var(--purple-bg); border-color: var(--purple-border); }
-    .odd-pill.btts-no    { background: var(--gray-bg);   border-color: var(--gray-border); }
+    .odd-pill.btts-yes      { background: var(--purple-bg); border-color: var(--purple-border); }
+    .odd-pill.btts-no       { background: var(--gray-bg);   border-color: var(--gray-border); }
+    .odd-pill.hcp-home-pill { background: #eef2ff; border-color: #c7d2fe; }
+    .odd-pill.hcp-away-pill { background: #fdf4ff; border-color: #e9d5ff; }
+    .odd-pill.fh-home-pill  { background: #ecfdf5; border-color: #a7f3d0; }
+    .odd-pill.fh-draw-pill  { background: #fffbeb; border-color: #fde68a; }
+    .odd-pill.fh-away-pill  { background: #fff1f2; border-color: #fecdd3; }
 
     .odds-loading {
       font-size: 0.72rem;
@@ -472,6 +477,11 @@ function buildOddsRow(m) {
   if (o.goals?.under25) pills.push(`<span class="odd-pill under-pill"><span class="odd-label">-2.5</span><span class="odd-val">${formatAmerican(o.goals.under25)}</span></span>`);
   if (o.btts?.yes) pills.push(`<span class="odd-pill btts-yes"><span class="odd-label">Ambos Sí</span><span class="odd-val">${formatAmerican(o.btts.yes)}</span></span>`);
   if (o.btts?.no)  pills.push(`<span class="odd-pill btts-no"><span class="odd-label">Ambos No</span><span class="odd-val">${formatAmerican(o.btts.no)}</span></span>`);
+  if (o.handicap?.home) pills.push(`<span class="odd-pill hcp-home-pill"><span class="odd-label">Hcp L (${o.handicap.point > 0 ? '+' : ''}${o.handicap.point})</span><span class="odd-val">${formatAmerican(o.handicap.home)}</span></span>`);
+  if (o.handicap?.away) pills.push(`<span class="odd-pill hcp-away-pill"><span class="odd-label">Hcp V (${o.handicap.point > 0 ? '' : '+'}${-o.handicap.point})</span><span class="odd-val">${formatAmerican(o.handicap.away)}</span></span>`);
+  if (o.firsthalf?.home) pills.push(`<span class="odd-pill fh-home-pill"><span class="odd-label">1T L</span><span class="odd-val">${formatAmerican(o.firsthalf.home)}</span></span>`);
+  if (o.firsthalf?.draw) pills.push(`<span class="odd-pill fh-draw-pill"><span class="odd-label">1T E</span><span class="odd-val">${formatAmerican(o.firsthalf.draw)}</span></span>`);
+  if (o.firsthalf?.away) pills.push(`<span class="odd-pill fh-away-pill"><span class="odd-label">1T V</span><span class="odd-val">${formatAmerican(o.firsthalf.away)}</span></span>`);
 
   if (!pills.length) return '';
   return `<div class="odds-row">${pills.join('')}</div>`;
@@ -554,6 +564,10 @@ function openModal(m, betType) {
       infoHtml = `⚽ Más de 2.5: <b>${formatAmerican(o.goals.over25)}</b> &nbsp;·&nbsp; Menos de 2.5: <b>${formatAmerican(o.goals.under25)}</b>`;
     else if (betType === 'Ambos anotan' && o.btts)
       infoHtml = `Ambos anotan Sí: <b>${formatAmerican(o.btts.yes)}</b> &nbsp;·&nbsp; No: <b>${formatAmerican(o.btts.no)}</b>`;
+    else if (betType === 'Hándicap' && o.handicap)
+      infoHtml = `🏠 <b>${m.home}</b> (${o.handicap.point > 0 ? '+' : ''}${o.handicap.point}) ${formatAmerican(o.handicap.home)} &nbsp;·&nbsp; ✈️ <b>${m.away}</b> (${o.handicap.point > 0 ? '' : '+'}${-o.handicap.point}) ${formatAmerican(o.handicap.away)}`;
+    else if (betType === '1er tiempo' && o.firsthalf)
+      infoHtml = `🏠 <b>${m.home}</b> ${formatAmerican(o.firsthalf.home)} &nbsp;·&nbsp; Empate ${formatAmerican(o.firsthalf.draw)} &nbsp;·&nbsp; ✈️ <b>${m.away}</b> ${formatAmerican(o.firsthalf.away)}`;
 
     if (infoHtml) {
       oddsInfo.innerHTML = `📊 Cuotas de referencia: ${infoHtml}`;
