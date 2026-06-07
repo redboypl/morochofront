@@ -392,25 +392,142 @@ th:nth-child(5) { }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 720px) {
-  body { padding: 1rem 0.85rem 2rem; }
-  header { padding: 0 0.25rem; }
-  .header-left h1 { font-size: 1.35rem; }
-  .controls { width: 100%; padding: 0 0.25rem; flex-direction: column; align-items: stretch; }
-  .controls label { width: 100%; margin-top: 0.5rem; }
-  .controls select, .controls input[type="text"] { width: 100%; }
-  .card { border-radius: 16px; }
-  table { display: block; }
-  thead { display: none; }
-  tbody { display: block; }
-  tr { display: grid; grid-template-columns: minmax(40px,60px) 1fr; gap: 0.75rem; padding: 0.95rem 0.9rem; border-bottom: 1px solid var(--border); }
+  body { padding: 0.75rem 0.75rem 6rem; }
+
+  /* Header: stack vertically */
+  header {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0;
+  }
+  .header-left h1 { font-size: 1.15rem; }
+  .header-left p  { font-size: 0.78rem; }
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .user-badge { font-size: 0.78rem; }
+  .btn-logout { font-size: 0.78rem; padding: 7px 14px; min-height: 36px; }
+
+  /* Odds banner */
+  .odds-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .btn-refresh { width: 100%; text-align: center; padding: 8px 12px; min-height: 36px; }
+
+  /* Nav tabs */
+  .nav-tabs { margin-bottom: 0.75rem; }
+  .nav-tab  { padding: 10px 14px; font-size: 0.82rem; }
+
+  /* Controls */
+  .controls {
+    width: 100%;
+    padding: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-bottom: 0.75rem;
+  }
+  .controls label { width: 100%; margin-top: 0.25rem; }
+  .controls select,
+  .controls input[type="text"] { width: 100%; height: 42px; font-size: 0.9rem; padding: 0 12px; }
+
+  /* Table → card list */
+  .card { border-radius: 12px; }
+  table  { display: block; }
+  thead  { display: none; }
+  tbody  { display: block; }
+
+  tr {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0.9rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
   tr:last-child { border-bottom: none; }
   td { display: block; padding: 0; min-width: 0; }
-  td::before { content: attr(data-label); display: block; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  td:nth-child(2) { font-size: 0.95rem; }
-  td:nth-child(3), td:nth-child(4), td:nth-child(5) { font-size: 0.82rem; }
+
+  /* Grupo (1st cell): pequeño badge arriba-derecha */
+  td:nth-child(1) {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.85rem;
+  }
+  td:nth-child(1)::before { display: none; }
+
+  /* Partido (2nd cell): nombre grande */
+  td:nth-child(2) {
+    font-size: 1rem;
+    font-weight: 600;
+    padding-right: 2.5rem; /* espacio para el badge de grupo */
+    margin-bottom: 4px;
+  }
+  td:nth-child(2)::before { display: none; }
   .match-name, .time-cell, .venue { white-space: normal; }
-  .date-sub { display: inline-block; margin-top: 0.15rem; }
+
+  /* Hora + fecha (3rd cell) */
+  td:nth-child(3) {
+    font-size: 0.78rem;
+    margin-bottom: 2px;
+  }
+  td:nth-child(3)::before {
+    content: '🕐 ';
+    font-style: normal;
+    font-size: 0.72rem;
+    color: var(--muted);
+    display: inline;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-right: 2px;
+  }
+  .time-cell { display: inline; }
+  .date-sub  { display: inline; margin-left: 4px; }
+
+  /* Sede (4th cell) */
+  td:nth-child(4) {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  td:nth-child(4)::before {
+    content: '📍 ';
+    font-style: normal;
+    font-size: 0.72rem;
+    display: inline;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-right: 2px;
+  }
+  .venue { display: inline; }
+
+  /* Apuestas (5th cell) */
+  td:nth-child(5)::before { display: none; }
+
+  /* Tags / mercados */
   .tags { gap: 6px; }
+  .tag  { padding: 5px 12px; font-size: 0.75rem; min-height: 30px; }
+
+  /* Dropdowns de mercado: que no se salgan de la pantalla */
+  .market-panel {
+    left: auto;
+    right: 0;
+    min-width: 200px;
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  /* Mis Apuestas */
+  .bets-summary { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bet-card { flex-direction: column; gap: 8px; }
+  .bet-card-right { text-align: left; }
+
+  /* Auth card */
+  .auth-card { padding: 2rem 1.25rem; }
 }
 
 /* ── NAV TABS (extraído de index.html) ── */
@@ -1308,10 +1425,37 @@ th:nth-child(5) { }
   #appScreen.ticket-open { padding-right: 0; }
   .ticket-panel {
     width: 100%;
-    max-width: 380px;
-    box-shadow: -4px 0 40px rgba(0,0,0,.18);
+    max-width: 100%;
+    box-shadow: 0 -4px 40px rgba(0,0,0,.18);
   }
-  .ticket-fab { display: flex !important; align-items: center; gap: 8px; }
+  .ticket-fab {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 14px 22px;
+    font-size: 0.95rem;
+    min-height: 48px;
+  }
+  /* Ticket panel: ocupa toda la pantalla desde abajo en móvil */
+  .ticket-panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 85vh;
+    width: 100%;
+    max-width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border2);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+    box-shadow: 0 -8px 40px rgba(0,0,0,.18);
+  }
+  .ticket-panel.open {
+    transform: translateY(0);
+  }
 }
 @media (min-width: 901px) {
   .ticket-fab { display: none !important; }
