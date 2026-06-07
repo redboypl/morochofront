@@ -273,14 +273,44 @@ function updateBetsBadge() {
 }
 
 function switchView(view) {
-  const isPartidos = view === 'partidos';
-  document.querySelectorAll('.nav-tab').forEach((t, i) =>
-    t.classList.toggle('active', isPartidos ? i === 0 : i === 1)
-  );
-  document.querySelector('.controls').style.display   = isPartidos ? '' : 'none';
-  document.querySelector('.card').style.display        = isPartidos ? '' : 'none';
-  document.getElementById('countLabel').style.display = isPartidos ? '' : 'none';
-  document.getElementById('misApuestasView').style.display = isPartidos ? 'none' : 'block';
+  // Quitar estado activo de tabs
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+  // Ocultar todas las vistas
+  document.querySelector('.controls').style.display = 'none';
+  document.querySelector('.card').style.display = 'none';
+  document.getElementById('countLabel').style.display = 'none';
+  document.getElementById('misApuestasView').style.display = 'none';
+  document.getElementById('bracketsView').style.display = 'none';
+  document.getElementById('groupsView').style.display = 'none';
+
+  // Vista PARTIDOS
+  if (view === 'partidos') {
+    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+    document.querySelector('.controls').style.display = '';
+    document.querySelector('.card').style.display = '';
+    document.getElementById('countLabel').style.display = '';
+    render();
+  }
+
+  // Vista LLAVES
+  else if (view === 'llaves') {
+    document.querySelectorAll('.nav-tab')[1].classList.add('active');
+    document.getElementById('bracketsView').style.display = 'block';
+    renderBracketsView();
+  }
+
+  // Vista GRUPOS
+  else if (view === 'grupos') {
+    document.querySelectorAll('.nav-tab')[2].classList.add('active');
+    document.getElementById('groupsView').style.display = 'block';
+    renderGroupsView();
+  }
+
+  // Vista MIS APUESTAS (desde el botón del header)
+  else if (view === 'misApuestas') {
+    document.getElementById('misApuestasView').style.display = 'block';
+  }
 }
 
 function renderMisApuestas(bets) {
