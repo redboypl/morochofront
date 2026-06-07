@@ -445,15 +445,13 @@ const TEAM_NAMES = {
   'Irak': 'Iraq', 'Irlanda': 'Ireland',
 };
 
+// ── DESPUÉS (CORRECTO) ──────────────────────────────────────────
 function findOdds(home, away) {
-  const h = TEAM_NAMES[home] || home;
-  const a = TEAM_NAMES[away] || away;
-  
-  // Búsqueda directa por nombre en inglés
+  // oddsData ya viene con nombres en español desde el backend
   for (const key of Object.keys(oddsData)) {
     const o = oddsData[key];
-    if (o.home === h && o.away === a) return o;
-    if (o.home === a && o.away === h) return o; // por si están invertidos
+    if (o.home === home && o.away === away) return o;
+    if (o.home === away && o.away === home) return o; // por si están invertidos
   }
   return null;
 }
