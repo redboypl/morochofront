@@ -297,13 +297,14 @@ function renderMisApuestas(bets) {
     return;
   }
 
+  // ── Summary ──
   const total      = bets.length;
   const conMonto   = bets.filter(b => b.amount);
   const montoTotal = conMonto.reduce((s, b) => s + parseFloat(b.amount || 0), 0);
   const partidos   = new Set(bets.map(b => b.match_id)).size;
   const gananciaTotal = conMonto.reduce((s, b) => {
-    const decimal = (b.odd_value != null) ? americanToDecimal(b.odd_value) : null;
-    return decimal ? s + ((parseFloat(b.amount) * decimal) - parseFloat(b.amount)) : s;
+    const decimal = b.odd_value != null ? americanToDecimal(b.odd_value) : null;
+    return decimal ? s + (parseFloat(b.amount) * decimal - parseFloat(b.amount)) : s;
   }, 0);
   const conNomio = conMonto.filter(b => b.odd_value != null).length;
 
@@ -314,18 +315,72 @@ function renderMisApuestas(bets) {
     ${conNomio > 0 ? `<div class="summary-card" style="border-color:var(--green-border);background:var(--green-bg)"><div class="s-val" style="color:var(--green-text);">+$${gananciaTotal.toFixed(2)}</div><div class="s-label" style="color:var(--green-text);">Ganancia potencial</div></div>` : ''}
   `;
 
-  const byMatch = {};
+  // ── Separar combinadas (agrupadas por combo_ticket_id) de simples ──
+  const combos  = {}; // combo_ticket_id → { bets[], amount }
+  const singles = {}; // match_id        → { home, away, date, time, venue, bets[] }
+
   bets.forEach(b => {
-    const key = b.match_id;
-    if (!byMatch[key]) byMatch[key] = { home: b.home, away: b.away, date: b.match_date, time: b.match_time, venue: b.venue, bets: [] };
-    byMatch[key].bets.push(b);
+    if (b.ticket_type === 'combo' && b.combo_ticket_id) {
+      if (!combos[b.combo_ticket_id]) combos[b.combo_ticket_id] = { bets: [], amount: b.amount };
+      combos[b.combo_ticket_id].bets.push(b);
+    } else {
+      const key = b.match_id;
+      if (!singles[key]) singles[key] = { home: b.home, away: b.away, date: b.match_date, time: b.match_time, venue: b.venue, bets: [] };
+      singles[key].bets.push(b);
+    }
   });
 
-  list.innerHTML = Object.values(byMatch).map(group => {
+  let html = '';
+
+  // ── Renderizar combinadas ──
+  for (const [comboId, group] of Object.entries(combos)) {
+    const amount = group.amount ? parseFloat(group.amount) : null;
+    const withOdds = group.bets.filter(b => b.odd_value != null);
+    const combinedDecimal = withOdds.length > 1
+      ? withOdds.reduce((acc, b) => acc * americanToDecimal(b.odd_value), 1)
+      : null;
+    const retorno  = (combinedDecimal && amount) ? amount * combinedDecimal : null;
+    const ganancia = retorno ? retorno - amount : null;
+    const combinedAmerican = combinedDecimal
+      ? (combinedDecimal >= 2 ? Math.round((combinedDecimal - 1) * 100) : Math.round(-100 / (combinedDecimal - 1)))
+      : null;
+
+    const selHtml = group.bets.map(b => `
+      <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;padding-left:8px;border-left:2px solid var(--accent)">
+        <span style="font-size:0.75rem;color:var(--muted)">${b.home} vs ${b.away}</span>
+        <span class="bet-type-pill">${b.bet_type}</span>
+        ${b.prediction ? `<span class="bet-prediction">→ ${b.prediction}</span>` : ''}
+        ${b.odd_value != null ? `<span style="font-size:0.75rem;color:var(--muted)">${formatAmerican(b.odd_value)}</span>` : ''}
+        <button class="btn-del-bet" onclick="deleteBetFromList(${b.id}, '${b.match_id}', '${b.bet_type}')">✕</button>
+      </div>`).join('');
+
+    html += `
+      <div class="bet-card" style="border-left:3px solid var(--accent)">
+        <div class="bet-card-left">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;background:var(--accent);color:#fff;border-radius:6px;padding:2px 8px;">COMBINADA</span>
+            <span style="font-size:0.8rem;color:var(--muted)">${group.bets.length} selecciones</span>
+            ${combinedAmerican != null ? `<span style="font-family:'DM Mono',monospace;font-size:0.82rem;font-weight:600">${formatAmerican(combinedAmerican)} <span style="font-size:0.7rem;font-weight:400;color:var(--muted)">(×${combinedDecimal.toFixed(2)})</span></span>` : ''}
+          </div>
+          ${selHtml}
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+            ${amount ? `<span style="font-family:'DM Mono',monospace;font-size:0.82rem;font-weight:600">$${amount.toFixed(2)}</span>` : ''}
+            ${ganancia != null ? `
+              <span style="display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:8px;padding:2px 9px;">
+                <span style="font-size:0.68rem;color:var(--green-text);">🏆 +$${ganancia.toFixed(2)}</span>
+                <span style="font-size:0.62rem;color:var(--green-text);opacity:0.7;">· retorno $${retorno.toFixed(2)}</span>
+              </span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ── Renderizar simples ──
+  for (const group of Object.values(singles)) {
     const betsHtml = group.bets.map(b => {
-      const decimal  = (b.odd_value != null) ? americanToDecimal(b.odd_value) : null;
-      const ganancia = (decimal && b.amount) ? ((parseFloat(b.amount) * decimal) - parseFloat(b.amount)) : null;
-      const retorno  = (decimal && b.amount) ? (parseFloat(b.amount) * decimal) : null;
+      const decimal  = b.odd_value != null ? americanToDecimal(b.odd_value) : null;
+      const ganancia = decimal && b.amount ? parseFloat(b.amount) * decimal - parseFloat(b.amount) : null;
+      const retorno  = decimal && b.amount ? parseFloat(b.amount) * decimal : null;
       const winHtml  = ganancia !== null ? `
         <span style="display:inline-flex;align-items:center;gap:4px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:8px;padding:2px 9px;">
           <span style="font-size:0.68rem;color:var(--green-text);">🏆 +$${ganancia.toFixed(2)}</span>
@@ -341,7 +396,7 @@ function renderMisApuestas(bets) {
         </div>`;
     }).join('');
 
-    return `
+    html += `
       <div class="bet-card">
         <div class="bet-card-left">
           <div class="bet-match">${group.home} <span style="color:var(--muted);font-weight:400">vs</span> ${group.away}</div>
@@ -349,7 +404,9 @@ function renderMisApuestas(bets) {
           ${betsHtml}
         </div>
       </div>`;
-  }).join('');
+  }
+
+  list.innerHTML = html;
 }
 
 async function deleteBetFromList(betId, mId, betType) {
@@ -666,52 +723,81 @@ async function saveTicket() {
   btn.disabled = true;
   btn.textContent = 'Guardando...';
 
-  let saved = 0, errors = 0;
+  try {
+    if (ticketType === 'combo' && ticketSelections.length > 1) {
+      // ── Apuesta combinada: un solo request con todas las selecciones ──
+      const selections = ticketSelections.map(s => ({
+        match_id:   matchId(s.match),
+        home:       s.match.home,
+        away:       s.match.away,
+        match_date: s.match.date,
+        match_time: s.match.time,
+        venue:      s.match.venue,
+        grupo:      s.match.g,
+        bet_type:   s.betType,
+        prediction: s.pickName || null,
+        odd_value:  s.oddValue,
+      }));
 
-  for (const s of ticketSelections) {
-    const mid = matchId(s.match);
-    try {
-      const res = await fetch(`${API_URL}/api/bets`, {
+      const res = await fetch(`${API_URL}/api/bets/combo`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({
-          match_id:   mid,
-          home:       s.match.home,
-          away:       s.match.away,
-          match_date: s.match.date,
-          match_time: s.match.time,
-          venue:      s.match.venue,
-          grupo:      s.match.g,
-          bet_type:   s.betType,
-          amount:     amount,
-          prediction: s.pickName || null,
-          odd_value:  s.oddValue,
-          ticket_type: ticketType,
-        }),
+        body: JSON.stringify({ amount, selections }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
-      savedBets[`${mid}|${s.betType}`] = { id: data.id, amount: data.amount, prediction: data.prediction, raw: data };
-      saved++;
-    } catch(e) {
-      errors++;
+      if (!res.ok) throw new Error(data.error || 'Error al guardar combinada');
+
+      // Registrar en savedBets cada selección devuelta
+      data.bets.forEach(b => {
+        savedBets[`${b.match_id}|${b.bet_type}`] = { id: b.id, amount: b.amount, prediction: b.prediction, raw: b };
+      });
+      showToast(`✓ Combinada guardada (${ticketSelections.length} selecciones)`);
+
+    } else {
+      // ── Apuestas simples: un request por selección ──
+      let saved = 0, errors = 0;
+      for (const s of ticketSelections) {
+        const mid = matchId(s.match);
+        try {
+          const res = await fetch(`${API_URL}/api/bets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({
+              match_id:    mid,
+              home:        s.match.home,
+              away:        s.match.away,
+              match_date:  s.match.date,
+              match_time:  s.match.time,
+              venue:       s.match.venue,
+              grupo:       s.match.g,
+              bet_type:    s.betType,
+              amount:      amount,
+              prediction:  s.pickName || null,
+              odd_value:   s.oddValue,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Error');
+          savedBets[`${mid}|${s.betType}`] = { id: data.id, amount: data.amount, prediction: data.prediction, raw: data };
+          saved++;
+        } catch(e) { errors++; }
+      }
+      if (saved > 0) showToast(`✓ ${saved} apuesta${saved>1?'s':''} guardada${saved>1?'s':''}`);
+      if (errors > 0) errEl.textContent = `${errors} apuesta${errors>1?'s':''} no se pudo${errors>1?'n':''} guardar.`;
     }
-  }
 
-  btn.disabled = false;
-  btn.textContent = 'Guardar apuesta';
-
-  if (saved > 0) {
-    showToast(`✓ ${saved} apuesta${saved>1?'s':''} guardada${saved>1?'s':''}`);
     ticketSelections = [];
     renderTicket();
     render();
     updateBetsBadge();
     await loadBets();
     if (window.innerWidth <= 900) closeTicketPanel();
-  }
-  if (errors > 0) {
-    errEl.textContent = `${errors} apuesta${errors>1?'s':''} no se pudo${errors>1?'n':''} guardar.`;
+
+  } catch(e) {
+    errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar apuesta';
   }
 }
 
