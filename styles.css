@@ -1048,3 +1048,23 @@ th:nth-child(5) { }
 .group-match:last-child {
   border-bottom: none;
 }
+
+.btn-misapuestas {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-misapuestas:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
