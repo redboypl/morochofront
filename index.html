@@ -50,9 +50,14 @@
     </div>
     <div class="header-right">
       <span class="user-badge" id="userBadge">—</span>
-      <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
-    </div>
-  </header>
+
+    <button class="btn-misapuestas" onclick="switchView('misApuestas')">
+    Mis Apuestas <span class="badge" id="betsBadge" style="display:none">0</span>
+    </button>
+
+  <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+</div>
+
 
   <div class="odds-banner" id="oddsBanner" style="display:none">
     <span><span class="dot-stale" id="oddsDot"></span> <span id="oddsStatus">Cargando cuotas...</span></span>
