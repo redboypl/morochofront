@@ -97,6 +97,7 @@ let oddsData  = {}; // cuotas cargadas desde el backend
 let modalMatch   = null;
 let modalBetType = null;
 let modalBetId   = null;
+let modalOdd     = null; // nomio americano activo en el modal
  
 // ══════════════════════════════════════════════════════════════
 // INIT
@@ -230,7 +231,33 @@ async function loadOdds(forceRefresh = false) {
   }
 }
  
-function formatAmerican(odd) {
+function americanToDecimal(american) {
+  if (american === null || american === undefined) return null;
+  return american > 0 ? (american / 100) + 1 : (100 / Math.abs(american)) + 1;
+}
+
+function updatePotentialWin() {
+  const amountRaw = document.getElementById('modalAmount').value;
+  const box       = document.getElementById('potentialWinBox');
+  const amount    = parseFloat(amountRaw);
+
+  if (!modalOdd || !amount || isNaN(amount) || amount <= 0) {
+    box.style.display = 'none';
+    return;
+  }
+
+  const decimal     = americanToDecimal(modalOdd);
+  const ganancia    = (amount * decimal) - amount;
+  const totalReturn = amount * decimal;
+
+  document.getElementById('potentialWinAmount').textContent = `$${ganancia.toFixed(2)}`;
+  document.getElementById('potentialWinTotal').textContent  = `Retorno total: $${totalReturn.toFixed(2)}`;
+  document.getElementById('potentialWinOddsLabel').textContent =
+    `Nomio ${formatAmerican(modalOdd)} · Multiplicador ×${decimal.toFixed(2)}`;
+  box.style.display = 'block';
+}
+
+
   if (odd === null || odd === undefined) return '—';
   return odd > 0 ? `+${odd}` : `${odd}`;
 }
@@ -303,10 +330,18 @@ function renderMisApuestas(bets) {
   const montoTotal = conMonto.reduce((s, b) => s + parseFloat(b.amount || 0), 0);
   const partidos   = new Set(bets.map(b => b.match_id)).size;
 
+  // Calcular ganancia potencial total de apuestas con nomio
+  const gananciaTotal = conMonto.reduce((s, b) => {
+    const decimal = (b.odd_value !== null && b.odd_value !== undefined) ? americanToDecimal(b.odd_value) : null;
+    return decimal ? s + ((parseFloat(b.amount) * decimal) - parseFloat(b.amount)) : s;
+  }, 0);
+  const conNomio = conMonto.filter(b => b.odd_value !== null && b.odd_value !== undefined).length;
+
   summary.innerHTML = `
     <div class="summary-card"><div class="s-val">${total}</div><div class="s-label">Apuestas activas</div></div>
     <div class="summary-card"><div class="s-val">${partidos}</div><div class="s-label">Partidos cubiertos</div></div>
     <div class="summary-card"><div class="s-val">$${montoTotal.toFixed(2)}</div><div class="s-label">Total apostado</div></div>
+    ${conNomio > 0 ? `<div class="summary-card" style="border-color:var(--green-border);background:var(--green-bg)"><div class="s-val" style="color:var(--green-text);">+$${gananciaTotal.toFixed(2)}</div><div class="s-label" style="color:var(--green-text);">Ganancia potencial</div></div>` : ''}
   `;
 
   const byMatch = {};
@@ -317,14 +352,25 @@ function renderMisApuestas(bets) {
   });
 
   list.innerHTML = Object.values(byMatch).map(group => {
-    const betsHtml = group.bets.map(b => `
+  const betsHtml = group.bets.map(b => {
+      const oddVal = b.odd_value !== undefined && b.odd_value !== null ? b.odd_value : null;
+      const decimal = oddVal !== null ? americanToDecimal(oddVal) : null;
+      const ganancia = (decimal && b.amount) ? ((parseFloat(b.amount) * decimal) - parseFloat(b.amount)) : null;
+      const retorno  = (decimal && b.amount) ? (parseFloat(b.amount) * decimal) : null;
+      const winHtml = ganancia !== null ? `
+        <span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto;background:var(--green-bg);border:1px solid var(--green-border);border-radius:8px;padding:2px 9px;">
+          <span style="font-size:0.68rem;color:var(--green-text);">🏆 +$${ganancia.toFixed(2)}</span>
+          <span style="font-size:0.62rem;color:var(--green-text);opacity:0.7;">· retorno $${retorno.toFixed(2)}</span>
+        </span>` : '';
+      return `
       <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
         <span class="bet-type-pill">${b.bet_type}</span>
         ${b.prediction ? `<span class="bet-prediction">→ ${b.prediction}</span>` : ''}
-        ${b.amount ? `<span style="font-family:'DM Mono',monospace;font-size:0.82rem;font-weight:600;color:var(--text);margin-left:auto">$${parseFloat(b.amount).toFixed(2)}</span>` : ''}
+        ${b.amount ? `<span style="font-family:'DM Mono',monospace;font-size:0.82rem;font-weight:600;color:var(--text);">$${parseFloat(b.amount).toFixed(2)}</span>` : ''}
+        ${winHtml}
         <button class="btn-del-bet" onclick="deleteBetFromList(${b.id}, '${b.match_id}', '${b.bet_type}')">✕</button>
       </div>
-    `).join('');
+    `}).join('');
 
     return `
       <div class="bet-card">
@@ -377,7 +423,7 @@ function oddRow(m, betLabel, dotCls, name, val) {
   const mData = JSON.stringify(m).replace(/"/g, "'");
   const safeName = name.replace(/'/g, "\'");
   return `
-    <div class="odd-row${savedCls}" onclick="closeAllPanels();openModal(${mData}, '${betLabel}', '${safeName}')">
+    <div class="odd-row${savedCls}" onclick="closeAllPanels();openModal(${mData}, '${betLabel}', '${safeName}', ${val !== null && val !== undefined ? val : 'null'})">
       <div class="odd-row-left">
         <span class="odd-dot ${dotCls}"></span>
         <span class="odd-name">${name}</span>
@@ -471,12 +517,17 @@ function render() {
 // ══════════════════════════════════════════════════════════════
 // MODAL
 // ══════════════════════════════════════════════════════════════
-function openModal(m, betType, preSelected) {
+function openModal(m, betType, preSelected, oddValue) {
   modalMatch = m; modalBetType = betType;
+  modalOdd   = (oddValue !== undefined && oddValue !== null) ? oddValue : null;
   const mid      = matchId(m);
   const key      = `${mid}|${betType}`;
   const existing = savedBets[key];
   modalBetId     = existing ? existing.id : null;
+
+  if (existing?.raw?.odd_value !== undefined && existing.raw.odd_value !== null) {
+    modalOdd = existing.raw.odd_value;
+  }
  
   document.getElementById('modalTitle').textContent = `${betType} — ${m.home} vs ${m.away}`;
   document.getElementById('modalSub').textContent   = `${m.date} · ${m.time} VET · ${m.venue}`;
@@ -484,6 +535,8 @@ function openModal(m, betType, preSelected) {
   document.getElementById('modalPrediction').value  = existing?.prediction || preSelected || '';
   document.getElementById('modalError').textContent = '';
   document.getElementById('btnDeleteBet').style.display = existing ? 'block' : 'none';
+  document.getElementById('potentialWinBox').style.display = 'none';
+  if (existing?.amount) updatePotentialWin();
  
   const oddsInfo = document.getElementById('modalOddsInfo');
   const o = findOdds(m.home, m.away);
@@ -509,7 +562,7 @@ function openModal(m, betType, preSelected) {
  
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
-  modalMatch = modalBetType = modalBetId = null;
+  modalMatch = modalBetType = modalBetId = modalOdd = null;
 }
  
 async function saveBet() {
@@ -521,7 +574,7 @@ async function saveBet() {
     const res = await fetch(`${API_URL}/api/bets`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ match_id:mid, home:modalMatch.home, away:modalMatch.away, match_date:modalMatch.date, match_time:modalMatch.time, venue:modalMatch.venue, grupo:modalMatch.g, bet_type:modalBetType, amount: amount ? parseFloat(amount) : null, prediction: prediction || null }),
+      body: JSON.stringify({ match_id:mid, home:modalMatch.home, away:modalMatch.away, match_date:modalMatch.date, match_time:modalMatch.time, venue:modalMatch.venue, grupo:modalMatch.g, bet_type:modalBetType, amount: amount ? parseFloat(amount) : null, prediction: prediction || null, odd_value: modalOdd || null }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error al guardar');
