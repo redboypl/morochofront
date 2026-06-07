@@ -161,6 +161,139 @@
     }
     .btn-refresh:hover { border-color: var(--accent); color: var(--text); }
     .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── NAV TABS ── */
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      max-width: 1100px;
+      margin: 0 auto 1rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0;
+    }
+    .nav-tab {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color .15s, border-color .15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .nav-tab .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border-radius: 99px;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      margin-left: 6px;
+    }
+
+    /* ── MIS APUESTAS ── */
+    #misApuestasView { display: none; max-width: 1100px; margin: 0 auto; }
+    .bets-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 1.2rem;
+    }
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      text-align: center;
+    }
+    .summary-card .s-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+    }
+    .summary-card .s-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .bets-list { display: flex; flex-direction: column; gap: 10px; }
+    .bet-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .bet-card-left { flex: 1; min-width: 0; }
+    .bet-match {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .bet-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .bet-type-pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 99px;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      margin-right: 6px;
+    }
+    .bet-prediction {
+      font-size: 0.8rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .bet-card-right { text-align: right; flex-shrink: 0; }
+    .bet-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .bet-date { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .btn-del-bet {
+      margin-top: 8px;
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border: 1px solid var(--danger, #f87171);
+      color: var(--danger, #f87171);
+      background: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .15s;
+    }
+    .btn-del-bet:hover { background: var(--danger, #f87171); color: #fff; }
+    .no-bets {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .no-bets .no-bets-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
   </style>
 </head>
 <body>
@@ -207,6 +340,18 @@
     <span><span class="dot-stale" id="oddsDot"></span> <span id="oddsStatus">Cargando cuotas...</span></span>
     <button class="btn-refresh" id="btnRefreshOdds" onclick="loadOdds(true)">↻ Actualizar cuotas</button>
   </div>
+
+  <!-- Nav tabs -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('partidos')">Partidos</button>
+    <button class="nav-tab" id="tabMisApuestas" onclick="switchView('misApuestas')">Mis Apuestas <span class="badge" id="betsBadge" style="display:none">0</span></button>
+  </div>
+
+  <!-- Vista: Mis Apuestas -->
+  <div id="misApuestasView">
+    <div class="bets-summary" id="betsSummary"></div>
+    <div class="bets-list" id="betsList"></div>
+  </div>
  
   <div class="controls">
     <label>Grupo</label>
@@ -219,11 +364,9 @@
     <label>Fecha</label>
     <select id="filterDate"><option value="">Todas</option></select>
     <input type="text" id="searchTeam" placeholder="Buscar selección..." />
-    <label>Vista</label>
-    <select id="viewMode"><option value="list">Lista</option><option value="groups">Grupos</option></select>
   </div>
  
-  <div id="listView" class="card">
+  <div class="card">
     <table>
       <thead>
         <tr>
@@ -238,9 +381,6 @@
     </table>
     <div class="no-results" id="noResults">No se encontraron partidos.</div>
   </div>
-
-  <div id="groupsView" class="card" style="display:none;padding:20px"></div>
-
   <p class="footer-bar" id="countLabel"></p>
 </div>
  
@@ -365,7 +505,6 @@ let token     = localStorage.getItem('token') || null;
 let user      = JSON.parse(localStorage.getItem('user') || 'null');
 let savedBets = {};
 let oddsData  = {}; // cuotas cargadas desde el backend
-let currentView = 'list';
  
 let modalMatch   = null;
 let modalBetType = null;
@@ -462,10 +601,6 @@ async function showApp() {
   document.getElementById('filterGroup').addEventListener('change', render);
   document.getElementById('filterDate').addEventListener('change', render);
   document.getElementById('searchTeam').addEventListener('input', render);
-  document.getElementById('viewMode').addEventListener('change', (e) => {
-    currentView = e.target.value;
-    render();
-  });
  
   await Promise.all([loadBets(), loadOdds()]);
   render();
@@ -532,9 +667,88 @@ async function loadBets() {
     const data = await res.json();
     savedBets = {};
     data.forEach(b => {
-      savedBets[`${b.match_id}|${b.bet_type}`] = { id: b.id, amount: b.amount, prediction: b.prediction };
+      savedBets[`${b.match_id}|${b.bet_type}`] = { id: b.id, amount: b.amount, prediction: b.prediction, raw: b };
     });
+    updateBetsBadge();
+    renderMisApuestas(data);
   } catch(err) { console.error('Error cargando apuestas:', err); }
+}
+
+function updateBetsBadge() {
+  const count = Object.keys(savedBets).length;
+  const badge = document.getElementById('betsBadge');
+  if (count > 0) {
+    badge.textContent = count;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function switchView(view) {
+  const isPartidos = view === 'partidos';
+  document.querySelectorAll('.nav-tab').forEach((t, i) =>
+    t.classList.toggle('active', isPartidos ? i === 0 : i === 1)
+  );
+  document.querySelector('.controls').style.display   = isPartidos ? '' : 'none';
+  document.querySelector('.card').style.display        = isPartidos ? '' : 'none';
+  document.getElementById('countLabel').style.display = isPartidos ? '' : 'none';
+  document.getElementById('misApuestasView').style.display = isPartidos ? 'none' : 'block';
+}
+
+function renderMisApuestas(bets) {
+  const summary = document.getElementById('betsSummary');
+  const list    = document.getElementById('betsList');
+
+  if (!bets || bets.length === 0) {
+    summary.innerHTML = '';
+    list.innerHTML = `
+      <div class="no-bets">
+        <div class="no-bets-icon">🎯</div>
+        <div>Aún no tienes apuestas registradas</div>
+        <div style="font-size:0.8rem;margin-top:6px">Ve a la pestaña Partidos y haz clic en un mercado</div>
+      </div>`;
+    return;
+  }
+
+  const total      = bets.length;
+  const conMonto   = bets.filter(b => b.amount);
+  const montoTotal = conMonto.reduce((s, b) => s + parseFloat(b.amount || 0), 0);
+  const partidos   = new Set(bets.map(b => b.match_id)).size;
+
+  summary.innerHTML = `
+    <div class="summary-card"><div class="s-val">${total}</div><div class="s-label">Apuestas activas</div></div>
+    <div class="summary-card"><div class="s-val">${partidos}</div><div class="s-label">Partidos cubiertos</div></div>
+    <div class="summary-card"><div class="s-val">$${montoTotal.toFixed(2)}</div><div class="s-label">Total apostado</div></div>
+  `;
+
+  // Agrupar por partido
+  const byMatch = {};
+  bets.forEach(b => {
+    const key = b.match_id;
+    if (!byMatch[key]) byMatch[key] = { home: b.home, away: b.away, date: b.match_date, time: b.match_time, venue: b.venue, bets: [] };
+    byMatch[key].bets.push(b);
+  });
+
+  list.innerHTML = Object.values(byMatch).map(group => {
+    const betsHtml = group.bets.map(b => `
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+        <span class="bet-type-pill">${b.bet_type}</span>
+        ${b.prediction ? `<span class="bet-prediction">→ ${b.prediction}</span>` : ''}
+        ${b.amount ? `<span style="font-family:'DM Mono',monospace;font-size:0.82rem;font-weight:600;color:var(--text);margin-left:auto">$${parseFloat(b.amount).toFixed(2)}</span>` : ''}
+        <button class="btn-del-bet" onclick="deleteBetFromList(${b.id}, '${b.match_id}', '${b.bet_type}')">✕</button>
+      </div>
+    `).join('');
+
+    return `
+      <div class="bet-card">
+        <div class="bet-card-left">
+          <div class="bet-match">${group.home} <span style="color:var(--muted);font-weight:400">vs</span> ${group.away}</div>
+          <div class="bet-meta">${group.date} · ${group.time} VET · ${group.venue}</div>
+          ${betsHtml}
+        </div>
+      </div>`;
+  }).join('');
 }
  
 // ══════════════════════════════════════════════════════════════
@@ -658,15 +872,6 @@ function render() {
   noRes.style.display = 'none';
   countEl.textContent = `${filtered.length} partido${filtered.length!==1?'s':''} mostrado${filtered.length!==1?'s':''}`;
  
-  
-  document.getElementById('listView').style.display = currentView === 'list' ? 'block' : 'none';
-  document.getElementById('groupsView').style.display = currentView === 'groups' ? 'block' : 'none';
-
-  if (currentView === 'groups') {
-    renderGroupsView(filtered);
-    return;
-  }
-
   tbody.innerHTML = filtered.map(m => `
     <tr>
       <td data-label="Gr."><span class="grp">${m.g}</span></td>
@@ -678,30 +883,6 @@ function render() {
   `).join('');
 }
  
-
-function renderGroupsView(filtered) {
-  const groupsView = document.getElementById('groupsView');
-  const grouped = {};
-
-  filtered.forEach(m => {
-    if (!grouped[m.g]) grouped[m.g] = [];
-    grouped[m.g].push(m);
-  });
-
-  groupsView.innerHTML = Object.keys(grouped).sort().map(g => `
-    <div style="margin-bottom:24px;border:1px solid var(--border);border-radius:12px;padding:16px">
-      <h3 style="margin-bottom:12px">🏆 Grupo ${g}</h3>
-      ${grouped[g].map(m => `
-        <div style="padding:10px;border-bottom:1px solid var(--border)">
-          <strong>${m.home}</strong> vs <strong>${m.away}</strong>
-          <div style="font-size:.85rem;color:var(--muted)">${m.date} · ${m.time} · ${m.venue}</div>
-          <div style="margin-top:8px">${buildTags(m)}</div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
-}
-
 // ══════════════════════════════════════════════════════════════
 // MODAL
 // ══════════════════════════════════════════════════════════════
@@ -760,8 +941,10 @@ async function saveBet() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error al guardar');
-    savedBets[`${mid}|${modalBetType}`] = { id: data.id, amount: data.amount, prediction: data.prediction };
+    savedBets[`${mid}|${modalBetType}`] = { id: data.id, amount: data.amount, prediction: data.prediction, raw: data };
     closeModal(); render(); showToast('✓ Apuesta guardada');
+    updateBetsBadge();
+    await loadBets();
   } catch(err) { document.getElementById('modalError').textContent = err.message; }
 }
  
@@ -773,9 +956,24 @@ async function deleteBet() {
     const mid = matchId(modalMatch);
     delete savedBets[`${mid}|${modalBetType}`];
     closeModal(); render(); showToast('Apuesta eliminada');
+    updateBetsBadge();
+    await loadBets();
   } catch(err) { document.getElementById('modalError').textContent = err.message; }
 }
  
+async function deleteBetFromList(betId, matchId, betType) {
+  if (!confirm('¿Eliminar esta apuesta?')) return;
+  try {
+    const res = await fetch(`${API_URL}/api/bets/${betId}`, { method:'DELETE', headers:{'Authorization':`Bearer ${token}`} });
+    if (!res.ok) throw new Error('Error al eliminar');
+    delete savedBets[`${matchId}|${betType}`];
+    showToast('Apuesta eliminada');
+    updateBetsBadge();
+    render();
+    await loadBets();
+  } catch(err) { showToast('Error al eliminar'); }
+}
+
 document.getElementById('modalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
